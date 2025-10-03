@@ -9,24 +9,25 @@ This repository is where we keep all our code, notebooks, and notes. The idea is
 
 Follow these steps to set up the project on your own computer. Even if you are new to coding or version control, just go step by step and you’ll be ready.
 
-Preferred IDE: VS Code
-We recommend using Visual Studio Code. It makes it easier for us to collaborate since we can share workspace settings, use the same extensions, and follow the same workflow.
+We recommend using **Visual Studio Code**. It makes collaboration easier for us since we can share workspace settings, use the same extensions, and follow the same workflow.
 
 ### 1. Clone this repository
 
 You need to get a local copy of this repository (the code lives on GitHub, but you’ll want it on your own machine). You have two options:
 
-#### Option A (easiest): Download as ZIP from GitHub and unzip it into a folder of your choice.
+#### Option A (easiest): Zip
+
+Download as ZIP from GitHub and unzip it into a folder of your choice.
 
 #### Option B (recommended): Use Git directly.
 
-Open VS Code.
+1. Open VS Code.
 
-Open the workspace/folder where you want the project to live.
+2. Open the workspace/folder where you want the project to live.
 
-Open the terminal in VS Code by pressing Ctrl + J (Windows) or Cmd + J (Mac).
+3. Open the terminal in VS Code by pressing Ctrl + J (Windows) or Cmd + J (Mac).
 
-Type:
+4. Type:
 ```
 git clone https://github.com/matildafroste/xoxoplanet-nasa2025.git
 ```
@@ -40,7 +41,7 @@ Make sure you have Python 3 installed. You can check by typing:
 python --version
 ```
 
-If you don’t have it, download it from python.org
+If you don’t have it, download it from [python.org](https://www.python.org/downloads/)
 .
 
 ### 3. Create a virtual environment
@@ -106,13 +107,8 @@ git push
 If you’re adding something major (like a new library), let the team know so we all update accordingly.
 
 ## Notes for the Team
-
-Use VS Code so we work in the same environment.
-
-Always activate your virtual environment before working on the project.
-
-Always pull before starting to code, so you don’t overwrite someone else’s work.
-
-If you add a new library, update requirements.txt so we all stay in sync.
-
-If something doesn’t work, don’t hesitate to ask in the chat so we solve it quickly together.
+- Use VS Code so we work in the same environment.
+- Always activate your virtual environment before working on the project.
+- Always pull before starting to code, so you don’t overwrite someone else’s work.
+- If you add a new library, update requirements.txt so we all stay in sync.
+- If something doesn’t work, don’t hesitate to ask in the chat so we solve it quickly together.
