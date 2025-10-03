@@ -1,2 +1,3 @@
 # test library to install
 scikit-learn
+pandas

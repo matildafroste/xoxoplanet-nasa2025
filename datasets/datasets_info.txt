@@ -1,0 +1,9 @@
+The datasets:
+Kepler Objects of Interest (KOI): https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=cumulative
+TESS Objects of Interst (TOI): https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=TOI
+K2 Planets and Candidates: https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=k2pandc
+
+All datasets consist of some lines of information before the actual data begins
+TOI: 90 lines
+KOI: 144 lines
+K2: 298 lines
