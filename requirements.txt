@@ -1,3 +1,6 @@
 # test library to install
 scikit-learn
 pandas
+tensorflow
+matplotlib
+seaborn
