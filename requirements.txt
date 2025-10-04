@@ -13,3 +13,8 @@ tensorflow
 # Visualization
 matplotlib
 seaborn
+streamlit
+
+# Additional libraries for enhanced exoplanet detection app
+numpy>=1.21.0 # For numerical operations (math with arrays), can be deleted later
+plotly>=5.0.0 # For the animated planet visualizations
