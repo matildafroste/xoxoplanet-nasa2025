@@ -117,5 +117,12 @@ Now install all the libraries we need for the project. They are listed in a file
 ```
 pip install -r requirements.txt
 ```
-You should be good to go!
 
+### 4. Contribute & run the app locally
+You should be good to go! Train models on new data, refactor the code, finetune the hyperparameters, or run the app locally using the command 
+
+```
+streamlit run app.py
+```
+
+Enjoy!
