@@ -168,6 +168,49 @@ body {
     border-color: #003366;
 }
 
+/* XO circle styling - exact Figma match from app_test2.py */
+.xo-circle {
+    display: inline-block;
+    width: 234px;
+    height: 226px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    border: 3px solid #ffffff;
+    margin: 0;
+    text-align: center;
+    line-height: 226px;
+    font-size: 200px;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.xo-circle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(255, 107, 107, 0.8);
+}
+
+/* Animation classes */
+.x-disappear {
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.5s ease;
+}
+
+.o-illuminate {
+    background: linear-gradient(45deg, #ff0000, #ff6666) !important;
+    animation: pulse 1s infinite;
+    box-shadow: 0 0 50px rgba(255, 0, 0, 0.8) !important;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
 .menu-section {
     background: rgba(0, 0, 0, 0.8);
     padding: 1.5rem;
@@ -564,15 +607,9 @@ def main():
                 planet_color = "#666666"  # Gray not exoplanet
                 planet_text = "NOT AN EXOPLANET"
         
-        st.markdown(f"""
+        st.markdown("""
         <div class="planet-container" style="text-align: center; margin: 2rem 0;">
-            <div style="width: 250px; height: 250px; border-radius: 50%; 
-                       background: {planet_color}; margin: 0 auto; 
-                       border: 5px solid #999999; box-shadow: 0 0 30px rgba(0,0,0,0.5);
-                       transition: all 1s ease;">
-                <div style="color: white; text-align: center; line-height: 250px; 
-                           font-weight: bold; font-size: 1.1rem;">{planet_text}</div>
-            </div>
+            <div class="xo-circle" id="xo-circle" style="display: flex; align-items: center; justify-content: center; margin: 0 auto;">XO</div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -652,7 +689,20 @@ def main():
                         st.error(f"**Confidence Level:** {confidence:.1%}")
                         st.info(f"This object appears to be a false positive or stellar phenomena.")
                     
-                    st.rerun()  # Refresh to show planet transformation
+                    # Trigger XO circle animation - change to O like test app
+                    st.markdown("""
+                    <script>
+                    setTimeout(function() {
+                        const xoCircle = document.getElementById('xo-circle');
+                        if (xoCircle) {
+                            xoCircle.innerHTML = 'O';
+                            xoCircle.classList.add('o-illuminate');
+                        }
+                    }, 500);
+                    </script>
+                    """, unsafe_allow_html=True)
+                    
+                    st.rerun()  # Refresh to show XO transformation
         
         
         # Description below planet
