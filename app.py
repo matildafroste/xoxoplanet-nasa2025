@@ -579,11 +579,11 @@ def main():
         # Data Input Choice (Manual vs CSV vs Random from dataset)
         input_method = st.radio(
             "Choose Input Method:",
-            ["Manual Entry (Sliders)", "CSV File Upload", "Existing input data from test set"],
+            ["Manual Entry", "CSV File Upload", "Existing input data from test set"],
             help="Select how to provide exoplanet data for analysis. If choosing existing you will get a randomized potential canditate form the test dataset."
         )
         st.markdown(input_method)
-        if input_method == "Manual Entry (Sliders)": # Let the user manually input own data
+        if input_method == "Manual Entry": # Let the user manually input own data
             names_and_descr = json.load(open('datasets/variable_names_and_descriptions.json'))
             # TODO : get the most important features?
             st.markdown("Enter astronomical observation data:")
@@ -720,7 +720,7 @@ def main():
                        help="Click to analyze the mysterious object",
                        use_container_width=True):
 
-                if input_method == "Manual Entry (Sliders)" and empty_fields_ratio>=0.5:
+                if input_method == "Manual Entry" and empty_fields_ratio>=0.5:
                     st.error('Warning: Fewer than half of the available variables have been selected. Model reliability may be significantly reduced, and the resulting likelihood estimates should be interpreted with caution. Consider including more observational parameters for a more robust analysis.')
                 
                 # Analyze with trained model
@@ -762,7 +762,7 @@ def main():
         st.markdown("""
         <div style="text-align: center; margin-top: 3rem;">
             <p style="color: #CCCCCC; font-size: 1.2rem; font-family: 'Jersey 20', cursive;">
-                Machine learning system for exoplanet classification using Kepler Objects of Interest dataset
+                Machine learning framework for exoplanet classification using the Kepler Objects of Interest database
             </p>
             <p style="color: #999999; font-size: 1rem; font-family: 'Jersey 20', cursive; margin-top: 1rem;">
                 Modify the input variables or model selection in the sidebar to try different scenarios
