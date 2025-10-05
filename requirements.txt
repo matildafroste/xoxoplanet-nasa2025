@@ -7,6 +7,9 @@ scikit-learn
 xgboost
 lightgbm
 
+# 
+openpyxl
+
 # Deep Learning (for future use)
 tensorflow
 
