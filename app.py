@@ -4,18 +4,15 @@ XOXOplanet Exoplanet Detection Interface
 MODEL INTEGRATION NOTES FOR THE TEAM:
 ==========================================
 
-This is a skeleton application ready for our ML model integration.
+This is an application that integrates the ML models.
 
 INTEGRATION POINTS (search for "FUTURE MODEL INTEGRATION POINT"):
 1. Line ~108: load_trained_model() function - Replace dummy model with our actual model
 2. Line ~308: Single prediction calls - Replace .predict() and .predict_proba()
 3. Line ~406: Batch prediction calls - Replace for file uploads
 
-MODEL FORMAT EXPECTED:
-- model.predict(data) should return array of 0s and 1s (0=not exoplanet, 1=exoplanet)
-- model.predict_proba(data) should return array of [p_not_exoplanet, p_exoplanet]
 
-Currently runs with dummy model for demonstration purposes.
+
 """
 
 import streamlit as st
@@ -252,7 +249,10 @@ header {visibility: hidden;}
 """, unsafe_allow_html=True)
 
 def load_and_prepare_data():
-    """Load and prepare the datasets for machine learning"""
+    """
+    NOTE: This function is not used in the current application.
+    Loads all datasets.
+    """
     try:
         # Load KOI dataset
         koi_data = pd.read_csv('datasets/KOI_cumulative.csv', skiprows=144)
@@ -269,6 +269,17 @@ def load_and_prepare_data():
         return None, None, None
 
 def load_chosen_data(data_choice = ""):
+    """
+    Loads the chosen dataset and returns it as a pandas dataframe.
+    Parameters:
+        data_choice (string): "Kepler full" or "Kepler subset"
+
+    Returns:
+        dataframe: The corresponding dataset
+
+    Raises:
+        NameError: when any other string is given
+    """
 
     if data_choice == "Kepler full":
         path = "datasets/KOI_2025.10.03_07.23.34.csv"
@@ -284,6 +295,7 @@ def load_chosen_data(data_choice = ""):
 
 def load_trained_model():
     """
+    NOTE: This function is not used in the current applicaton.
     Train exoplanet detection model using NASA KOI dataset
     USES ONLY LIBRARIES ALREADY IN PROJECT
     """
@@ -363,7 +375,10 @@ def load_trained_model():
         return FallbackModel(), {'accuracy': 0.65, 'model_type': 'Fallback Rule-Based Model'}
 
 def create_planet_transformation(is_exoplanet, confidence):
-    """Create dramatic planet transformation animation"""
+    """
+    NOTE: This function is not used in the current application.
+    Create dramatic planet transformation animation
+    """
     
     # Star position (center)
     star_x = [0]
@@ -411,10 +426,6 @@ def create_planet_transformation(is_exoplanet, confidence):
     )
     
     return fig
-
-# Stars background function removed to prevent rendering issues
-
-# Old dummy model function removed - now using trained model
 
 def load_results_models(results_path="results/models"):
     """
@@ -483,11 +494,7 @@ def get_data_info(df, data_choice):
     non_numeric_columns = [col for col in df.columns if not pd.api.types.is_numeric_dtype(df[col])]
     columns_to_remove.extend(non_numeric_columns)
 
-   
-
     # use .difference() to remove unwanted columns
-    # TODO: remove non_numeric columns also 
-
     feature_columns = all_columns.difference(columns_to_remove)
     data_info_dict = {
         "All columns": list(all_columns),
@@ -518,28 +525,13 @@ def show_model_scores(scores: dict, model_name: str = "Model Performance"):
 
 def main():
     """Main application function"""
-    
-    
-    
-    # # Auto-load trained model
-    # if 'model' not in st.session_state:
-    #     with st.spinner("Loading first NASA Exoplanet Detection Model..."):
-    #         # model, model_info = load_trained_model()
-    #         # Get first key
-    #         model_name = next(iter(models_dict))
-            
-    #         # Get first value (the model)
-    #         model_ex = models_dict[model_name]
-    #         st.session_state['model'] = model_ex
-    #         st.session_state['model_info'] = results_dict[model_name]
-    
-    # Professional NASA-style header
+
+    # Header
     st.markdown('<h1 class="main-header">XOXOPLANET DETECTION SYSTEM</h1>', unsafe_allow_html=True)
     
-    # Sidebar with navigation menu
+    # Sidebar with navigation menu. This is where the inputs and model used is specified.
     with st.sidebar:
-
-        # Test buttons
+        # Select whether to use the Kepler dataset with all variables or a just subset (default)
         st.markdown("## DATA SELECTION")
         data_choice = st.selectbox(
             "Select Data Source:", 
@@ -553,11 +545,9 @@ def main():
         st.session_state['data_name'] = data_choice
         st.session_state['data'] = data_df
 
-        # st.success(f"Active Data: {data_choice}")
-        st.markdown("## MODEL STATUS")
+        st.markdown("## MODEL SELECTION")
         
         # Model Selection Dropdown (expandable list)
-        # Stars background removed to prevent rendering issues
         models_dict = load_results_models(results_path=f"results/{data_choice}/models/")
         results_list = load_results_info(results_path=f"results/{data_choice}/") 
         
@@ -576,29 +566,26 @@ def main():
         st.session_state['model'] = models_dict[model_choice]
         st.session_state['model_info'] = results_dict[model_choice]
         
-        # st.success(f"Active Model: {model_choice}")
+        # Table where the model's performance metrics are shown
         show_model_scores(scores = results_dict[model_choice])
-        # st.info(f"Model performance scores: \n{st.session_state['model_info']}")
         
-        
-        # st.warning("Temporary test buttons for demonstration")
-        
+        # Get the relevant dataset features
         data_info = get_data_info(data_df, data_choice) 
         features = data_info["Feature columns"]
-        # Input Section - Manual Data Entry
-        st.markdown("## INPUT YOUR DATA")
+
+        # Input Section
+        st.markdown("## INPUT DATA")
         
-        # Data Input Choice (Manual vs CSV)
+        # Data Input Choice (Manual vs CSV vs Random from dataset)
         input_method = st.radio(
             "Choose Input Method:",
-            ["Manual Entry (Sliders)", "CSV File Upload", "Existing input data from test set"],
+            ["Manual Entry", "CSV File Upload", "Existing input data from test set"],
             help="Select how to provide exoplanet data for analysis. If choosing existing you will get a randomized potential canditate form the test dataset."
         )
         st.markdown(input_method)
-        # TODO: add a button for existing input data
-        if input_method == "Manual Entry (Sliders)":
+        if input_method == "Manual Entry": # Let the user manually input own data
             names_and_descr = json.load(open('datasets/variable_names_and_descriptions.json'))
-            # TODO : get the most important features? 
+            # TODO : get the most important features?
             st.markdown("Enter astronomical observation data:")
             input_values =  {}
             for feature in features:
@@ -618,7 +605,7 @@ def main():
                     try:
                         input_text = float(input_text)  # try to convert the variable to a float
                     except ValueError:  # if it's not convertible, catch the ValueError exception
-                        st.markdown(f"Invalid input, only numbers are allowed.")
+                        st.error(f"Invalid input, only numbers are allowed.")
                 input_values[feature] = input_text
                 
             # Load feature order 
@@ -644,13 +631,13 @@ def main():
             input_to_predict = input_df_scaled
                 
                 
-        elif input_method == "CSV File Upload":  # CSV File Upload# CSV File Upload
+        elif input_method == "CSV File Upload":  # CSV File Upload
             st.info("Upload CSV file with exoplanet data:")
             
             uploaded_file = st.file_uploader(
                 "Choose CSV file", 
                 type="csv",
-                help="Upload CSV with columns: XX"
+                help="Upload CSV with columns as specified by Kepler Objects of Interest: koi_disposition, ..."
             )
             
             if uploaded_file is not None:
@@ -675,98 +662,8 @@ def main():
             random_idx = np.random.choice(arr.shape[0])
             input_to_predict = arr[random_idx].reshape(1, -1)
 
-        
-        # Manual test buttons
-        col1, col2 = st.columns(2)
-        
-        # with col1:
-        #     if st.button("TEST EXOPLANET", type="secondary"):
-        #         # st.session_state['test_data'] = {
-        #         #     **input_values
-        #         # }
-        #         st.success("Exoplanet test data loaded!")
-        
-        # with col2:
-        #     if st.button("TEST NOT EXOPLANET", type="secondary"):
-        #         # st.session_state['test_data'] = {
-        #         #     **input_values
-        #         # }
-        #         st.success("Not exoplanet test data loaded!")
-        
-        # Model Comparison Graphics
-        # st.markdown("## MODEL COMPARISON")
-        
-        # if st.button("Show Model Performance", type="secondary"):
-        #     # Create model comparison visualization
-        #     st.info("Generating model performance comparison...")
-            
-        #     # Sample performance data for different models
-        #     models_data = {
-        #         'Model': ['Random Forest', 'SVM', 'Gradient Boosting', 'Neural Network'],
-        #         'Accuracy': [0.87, 0.82, 0.89, 0.85],
-        #         'Precision': [0.91, 0.88, 0.93, 0.89],
-        #         'Recall': [0.83, 0.79, 0.86, 0.84],
-        #         'F1-Score': [0.87, 0.83, 0.89, 0.86]
-        #     }
-            
-        #     df_comparison = pd.DataFrame(models_data)
-            
-        #     # Display comparison table
-        #     st.write("**Model Performance Metrics:**")
-        #     st.dataframe(df_comparison, use_container_width=True)
-            
-        #     # Create comparison chart
-        #     fig_comparison = px.bar(
-        #         df_comparison, 
-        #         x='Model', 
-        #         y=['Accuracy', 'Precision', 'Recall', 'F1-Score'],
-        #         title="Model Performance Comparison",
-        #         color_discrete_sequence=['#0066CC', '#0088FF', '#003366', '#0099FF']
-        #     )
-        #     fig_comparison.update_layout(
-        #         plot_bgcolor='rgba(0,0,0,0)',
-        #         paper_bgcolor='rgba(0,0,0,0)',
-        #         font_color='white'
-        #     )
-            
-        #     st.plotly_chart(fig_comparison, use_container_width=True)
-            
-        #     # Feature Importance for Random Forest
-        #     if model_choice == "Random Forest Classifier":
-        #         st.subheader("Feature Importance (Random Forest)")
-                
-        #         feature_importance_data = {
-        #             'Feature': ['Orbital Period', 'Transit Depth', 'Signal-to-Noise', 'Duration', 'Impact'],
-        #             'Importance': [0.25, 0.35, 0.20, 0.12, 0.08]
-        #         }
-                
-        #         fig_features = px.bar(
-        #             feature_importance_data,
-        #             x='Importance',
-        #             y='Feature',
-        #             orientation='h',
-        #             title="Feature Importance for Exoplanet Detection",
-        #             color='Importance',
-        #             color_continuous_scale='Blues'
-        #         )
-        #         fig_features.update_layout(
-        #             plot_bgcolor='rgba(0,0,0,0)',
-        #             paper_bgcolor='rgba(0,0,0,0)',
-        #             font_color='white'
-        #         )
-                
-        #         st.plotly_chart(fig_features, use_container_width=True)
-        
-        # Navigation Menu in sidebar
-        st.markdown("## NAVIGATION MENU")
-        st.markdown("""
-        **Detection Analysis**  
-        **Model Comparison**  
-        **Data Upload**  
-        **Model Information**  
-        **Documentation**  
-        **About NASA Data**
-        """)
+        # Add link to KOI data
+        st.markdown("**[About Nasa Data](%s)**" % "https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=cumulative")
     
     # Main content area - always show planet
     # Center the planet with button
@@ -823,18 +720,8 @@ def main():
                        help="Click to analyze the mysterious object",
                        use_container_width=True):
 
-                if input_method == "Manual Entry (Sliders)" and empty_fields_ratio>=0.5:
+                if input_method == "Manual Entry" and empty_fields_ratio>=0.5:
                     st.error('Warning: Fewer than half of the available variables have been selected. Model reliability may be significantly reduced, and the resulting likelihood estimates should be interpreted with caution. Consider including more observational parameters for a more robust analysis.')
-               # Use test data if available, otherwise use sidebar input fields
-                # if 'test_data' in st.session_state:
-
-                #     for feature in features:
-                #         feature = st.session_state['test_data'][feature]
-
-                #     st.success(f"Using test data")
-                # else:
-                #     # Use values from sidebar input fields
-                #     st.success(f"Using manual input")
                 
                 # Analyze with trained model
                 with st.spinner("Analyzing mysterious object..."):
@@ -844,10 +731,7 @@ def main():
                     # st.markdown(input_to_predict)
                     prediction = model.predict(input_to_predict)[0]
                     confidence = model.predict_proba(input_to_predict)[0][1]
-                    
-                    
-
-                    
+      
                     # Store result
                     st.session_state['last_result'] = prediction
                     st.session_state['last_confidence'] = confidence
@@ -856,12 +740,8 @@ def main():
                     if prediction == 1:
                         st.success(f"**EXOPLANET DETECTED!**")
                         st.info(f"**This object appears to be an exoplanet with confidence level {confidence:.1%}**")
-                        # st.info(f"• Orbital Period: {orbital_period:.1f} days")
-                        # st.info(f"• Transit Depth: {transit_depth:.0f} ppm")
-                        # st.info(f"• Signal-to-Noise Ratio: {model_snr:.1f}")
                     else:
                         st.error(f"**CANDIDATE DETECTED**")
-                        # st.error(f"**Confidence Level:** ")
                         st.info(f"This object does not with certainty appear to be an exoplanet - this is classified as a Canditate with confidence level {confidence:.1%}.")
                     
                     # Trigger XO circle animation - change to O like test app
@@ -876,18 +756,16 @@ def main():
                     }, 500);
                     </script>
                     """, unsafe_allow_html=True)
-                    
-                    # st.rerun()  # Refresh to show XO transformation
         
         
         # Description below planet
         st.markdown("""
         <div style="text-align: center; margin-top: 3rem;">
             <p style="color: #CCCCCC; font-size: 1.2rem; font-family: 'Jersey 20', cursive;">
-                Advanced AI analysis system for exoplanet detection using NASA datasets
+                Machine learning framework for exoplanet classification using the Kepler Objects of Interest database
             </p>
             <p style="color: #999999; font-size: 1rem; font-family: 'Jersey 20', cursive; margin-top: 1rem;">
-                Use the test buttons in the sidebar to try different scenarios
+                Modify the input variables or model selection in the sidebar to try different scenarios
             </p>
         </div>
         """, unsafe_allow_html=True)
