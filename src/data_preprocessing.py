@@ -1,3 +1,5 @@
+from src.config import columns_to_remove_KOI_full, columns_to_remove_KOI_subset
+
 def drop_empty_cols_and_rows(df_in):
     df = df_in.copy()
     print("Original shape:", df.shape)
@@ -15,11 +17,9 @@ def drop_empty_cols_and_rows(df_in):
 def drop_columns(df_in, big_KOI_data=True):
     if big_KOI_data:
         # below if all
-        columns_to_remove = ["rowid", "kepid", "kepoi_name", "kepler_name", "koi_pdisposition", "koi_score",
-                            "koi_tce_delivname"]
+        columns_to_remove = columns_to_remove_KOI_full
     else:
         # Below if cumulative
-        columns_to_remove = ["loc_rowid", "kepid", "kepoi_name", "kepler_name", "koi_pdisposition", "koi_score",
-                            "koi_tce_delivname"]
+        columns_to_remove = columns_to_remove_KOI_subset
     df_rem = df_in.drop(columns=columns_to_remove)
     return df_rem

@@ -29,7 +29,10 @@ import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime
 import os
+import joblib
+import json
 
+from src.config import columns_to_remove_KOI_full, columns_to_remove_KOI_subset
 # Set page configuration
 st.set_page_config(
     page_title="XOXOplanet Exoplanet Detection",
@@ -265,6 +268,20 @@ def load_and_prepare_data():
         st.error(f"Error loading datasets: {str(e)}")
         return None, None, None
 
+def load_chosen_data(data_choice = ""):
+
+    if data_choice == "Kepler full":
+        path = "datasets/KOI_2025.10.03_07.23.34.csv"
+        skiprow_nr = 144
+    elif data_choice == "Kepler subset": 
+        path = 'datasets/KOI_cumulative.csv'
+        skiprow_nr = 53
+    else:
+        print(NameError)
+
+    df_orig = pd.read_csv(path, skiprows=skiprow_nr)
+    return df_orig
+
 def load_trained_model():
     """
     Train exoplanet detection model using NASA KOI dataset
@@ -399,17 +416,106 @@ def create_planet_transformation(is_exoplanet, confidence):
 
 # Old dummy model function removed - now using trained model
 
+def load_results_models(results_path="results/models"):
+    """
+    Load all saved joblib models from a folder into a dictionary.
+
+    Parameters:
+        results_path (str): Path where models are saved.
+
+    Returns:
+        dict: {model_name: trained_model}
+    """
+    models = {}
+    for file in os.listdir(results_path):
+        if file.endswith(".joblib"):
+            model_name = file.replace(".joblib", "")
+            models[model_name] = joblib.load(os.path.join(results_path, file))
+            print(f"✅ Loaded model: {model_name}")
+    return models
+
+def load_results_info(results_path="results/"):
+    """
+    Load saved results from results.json.
+
+    Parameters:
+        results_path (str): Path where results.json is saved.
+
+    Returns:
+        dict: Loaded results dictionary
+    """
+    file_path = os.path.join(results_path, "results.json")
+    
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"No results.json found in {results_path}")
+    
+    with open(file_path, "r") as f:
+        results = json.load(f)
+    
+    print(f"Loaded results from {file_path}")
+    return results
+
+def restructure_results(res_list):
+    results_dict = {}
+
+    for val in res_list:
+        model_name = val["model"]  # grab model name
+        # take all other keys except "model"
+        scores = {k: v for k, v in val.items() if k != "model"}  
+        results_dict[model_name] = scores
+
+    return results_dict
+
+def get_data_info(df, data_choice):
+    df_in = df.copy()
+
+    if data_choice == "Kepler full":
+        columns_to_remove = columns_to_remove_KOI_full.copy()
+    elif data_choice == "Kepler subset":   # fixed typo: "fubset" -> "subset"
+        columns_to_remove = columns_to_remove_KOI_subset.copy()
+    else:
+        raise NameError(f"Invalid data_choice: {data_choice}")
+
+    # always remove label column
+    columns_to_remove.append("koi_disposition")
+
+    # all columns
+    all_columns = df_in.columns
+
+    # use .difference() to remove unwanted columns
+    # TODO: remove non_numeric columns also 
+
+    feature_columns = all_columns.difference(columns_to_remove)
+
+    data_info_dict = {
+        "All columns": list(all_columns),
+        "Feature columns": list(feature_columns)
+    }
+    return data_info_dict
+
+
+
 def main():
     """Main application function"""
     
     # Stars background removed to prevent rendering issues
+    models_dict = load_results_models()
+    results_list = load_results_info() 
     
+    results_dict = restructure_results(results_list)
+    
+    available_models = results_dict.keys()
     # Auto-load trained model
     if 'model' not in st.session_state:
-        with st.spinner("Loading NASA Exoplanet Detection Model..."):
-            model, model_info = load_trained_model()
-            st.session_state['model'] = model
-            st.session_state['model_info'] = model_info
+        with st.spinner("Loading first NASA Exoplanet Detection Model..."):
+            # model, model_info = load_trained_model()
+            # Get first key
+            model_name = next(iter(models_dict))
+            
+            # Get first value (the model)
+            model_ex = models_dict[model_name]
+            st.session_state['model'] = model_ex
+            st.session_state['model_info'] = results_dict[model_name]
     
     # Professional NASA-style header
     st.markdown('<h1 class="main-header">XOXOPLANET DETECTION SYSTEM</h1>', unsafe_allow_html=True)
@@ -419,12 +525,7 @@ def main():
         st.markdown("## MODEL STATUS")
         
         # Model Selection Dropdown (expandable list)
-        available_models = [
-            "Random Forest Classifier",
-            "Support Vector Machine", 
-            "Gradient Boosting",
-            "Neural Network"
-        ]
+        
         
         model_choice = st.selectbox(
             "Select Model:", 
@@ -432,27 +533,54 @@ def main():
             index=0,
             help="Choose the machine learning model for exoplanet detection"
         )
+
+        # Update session state
+        st.session_state['model'] = models_dict[model_choice]
+        st.session_state['model_info'] = results_dict[model_choice]
         
         st.success(f"Active Model: {model_choice}")
-        st.info(f"Accuracy: {st.session_state['model_info']['accuracy']:.0%}")
+        st.info(f"Model performance scores: \n{st.session_state['model_info']}")
         
         # Test buttons
-        st.markdown("## TEST SELECTIONS")
-        st.warning("Temporary test buttons for demonstration")
+        st.markdown("## DATA SELECTION")
+        data_choice = st.selectbox(
+            "Select Data Source:", 
+            ["Kepler full", "Kepler subset"],
+            index=0,
+            help="Choose the machine learning model for exoplanet detection"
+        )
+
+        data_df = load_chosen_data(data_choice)
+        # Update session state
+        st.session_state['data_name'] = data_choice
+        st.session_state['data'] = data_df
+
+        st.success(f"Active Data: {data_choice}")
+        # st.warning("Temporary test buttons for demonstration")
         
+        data_info = get_data_info(data_df, data_choice) 
+        features = data_info["Feature columns"]
         # Input Section - Manual Data Entry
-        st.markdown("## INPUT DATA")
+        st.markdown("## INPUT YOUR DATA")
         
         # Data Input Choice (Manual vs CSV)
         input_method = st.radio(
             "Choose Input Method:",
-            ["Manual Entry (Sliders)", "CSV File Upload"],
+            ["Manual Entry (Sliders)", "CSV File Upload", "Existing input data"],
             help="Select how to provide exoplanet data for analysis"
         )
-        
+        # TODO: add a button for existing input data
         if input_method == "Manual Entry (Sliders)":
+            # TODO : get the most important features? 
             st.info("Enter astronomical observation data:")
+            input_values =  {}
+            for feature in features[:5]:
+                input_values[feature] = st.number_input(feature
+                                                        # , min_value = data_df[feature].min(), max_value= data_df[feature].max()
+                                                        )
             
+
+
             orbital_period = st.number_input("Orbital Period (days)", min_value=0.1, value=25.0, 
                                            help="How long it takes planet to orbit its star")
             
@@ -505,6 +633,7 @@ def main():
         with col1:
             if st.button("TEST EXOPLANET", type="secondary"):
                 st.session_state['test_data'] = {
+                    **input_values,
                     'orbital_period': 35.0,
                     'transit_depth': 1500.0,
                     'model_snr': 12.5,
@@ -516,6 +645,7 @@ def main():
         with col2:
             if st.button("TEST NOT EXOPLANET", type="secondary"):
                 st.session_state['test_data'] = {
+                    **input_values,
                     'orbital_period': 2.0,
                     'transit_depth': 300.0,
                     'model_snr': 3.2,
@@ -653,6 +783,9 @@ def main():
                        help="Click to analyze the mysterious object"):
                 # Use test data if available, otherwise use sidebar input fields
                 if 'test_data' in st.session_state:
+
+                    # for feature in features:
+
                     orbital_period = st.session_state['test_data']['orbital_period']
                     transit_depth = st.session_state['test_data']['transit_depth']
                     model_snr = st.session_state['test_data']['model_snr']
@@ -676,8 +809,11 @@ def main():
                         impact_parameter     # koi_impact
                     ]
                     
+                    
                     input_data = [input_features]
                     
+
+                    # input data is a dcitionary with keys as column/featuyre names and their values are the values to predict on
                     prediction = model.predict(input_data)[0]
                     confidence = model.predict_proba(input_data)[0][1]  # Exoplanet confidence
                     
