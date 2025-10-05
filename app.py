@@ -475,18 +475,20 @@ def get_data_info(df, data_choice):
         columns_to_remove = columns_to_remove_KOI_subset.copy()
     else:
         raise NameError(f"Invalid data_choice: {data_choice}")
-
+    # all columns
+    all_columns = df_in.columns
     # always remove label column
     columns_to_remove.append("koi_disposition")
 
-    # all columns
-    all_columns = df_in.columns
+    non_numeric_columns = [col for col in df.columns if not pd.api.types.is_numeric_dtype(df[col])]
+    columns_to_remove.extend(non_numeric_columns)
+
+   
 
     # use .difference() to remove unwanted columns
     # TODO: remove non_numeric columns also 
 
     feature_columns = all_columns.difference(columns_to_remove)
-
     data_info_dict = {
         "All columns": list(all_columns),
         "Feature columns": list(feature_columns)
@@ -498,34 +500,51 @@ def get_data_info(df, data_choice):
 def main():
     """Main application function"""
     
-    # Stars background removed to prevent rendering issues
-    models_dict = load_results_models()
-    results_list = load_results_info() 
     
-    results_dict = restructure_results(results_list)
     
-    available_models = results_dict.keys()
-    # Auto-load trained model
-    if 'model' not in st.session_state:
-        with st.spinner("Loading first NASA Exoplanet Detection Model..."):
-            # model, model_info = load_trained_model()
-            # Get first key
-            model_name = next(iter(models_dict))
+    # # Auto-load trained model
+    # if 'model' not in st.session_state:
+    #     with st.spinner("Loading first NASA Exoplanet Detection Model..."):
+    #         # model, model_info = load_trained_model()
+    #         # Get first key
+    #         model_name = next(iter(models_dict))
             
-            # Get first value (the model)
-            model_ex = models_dict[model_name]
-            st.session_state['model'] = model_ex
-            st.session_state['model_info'] = results_dict[model_name]
+    #         # Get first value (the model)
+    #         model_ex = models_dict[model_name]
+    #         st.session_state['model'] = model_ex
+    #         st.session_state['model_info'] = results_dict[model_name]
     
     # Professional NASA-style header
     st.markdown('<h1 class="main-header">XOXOPLANET DETECTION SYSTEM</h1>', unsafe_allow_html=True)
     
     # Sidebar with navigation menu
     with st.sidebar:
+
+        # Test buttons
+        st.markdown("## DATA SELECTION")
+        data_choice = st.selectbox(
+            "Select Data Source:", 
+            ["Kepler subset", "Kepler full"],
+            index=0,
+            help="Choose the machine learning model for exoplanet detection"
+        )
+
+        data_df = load_chosen_data(data_choice)
+        # Update session state
+        st.session_state['data_name'] = data_choice
+        st.session_state['data'] = data_df
+
+        st.success(f"Active Data: {data_choice}")
         st.markdown("## MODEL STATUS")
         
         # Model Selection Dropdown (expandable list)
+        # Stars background removed to prevent rendering issues
+        models_dict = load_results_models(results_path=f"results/{data_choice}/models/")
+        results_list = load_results_info(results_path=f"results/{data_choice}/") 
         
+        results_dict = restructure_results(results_list)
+        
+        available_models = results_dict.keys()
         
         model_choice = st.selectbox(
             "Select Model:", 
@@ -541,21 +560,7 @@ def main():
         st.success(f"Active Model: {model_choice}")
         st.info(f"Model performance scores: \n{st.session_state['model_info']}")
         
-        # Test buttons
-        st.markdown("## DATA SELECTION")
-        data_choice = st.selectbox(
-            "Select Data Source:", 
-            ["Kepler full", "Kepler subset"],
-            index=0,
-            help="Choose the machine learning model for exoplanet detection"
-        )
-
-        data_df = load_chosen_data(data_choice)
-        # Update session state
-        st.session_state['data_name'] = data_choice
-        st.session_state['data'] = data_df
-
-        st.success(f"Active Data: {data_choice}")
+        
         # st.warning("Temporary test buttons for demonstration")
         
         data_info = get_data_info(data_df, data_choice) 
@@ -814,6 +819,7 @@ def main():
                     
 
                     # input data is a dcitionary with keys as column/featuyre names and their values are the values to predict on
+                    
                     prediction = model.predict(input_data)[0]
                     confidence = model.predict_proba(input_data)[0][1]  # Exoplanet confidence
                     

@@ -14,7 +14,7 @@ def drop_empty_cols_and_rows(df_in):
     df.head()
     return df
 
-def drop_columns(df_in, big_KOI_data=True):
+def drop_columns(df_in, big_KOI_data):
     if big_KOI_data:
         # below if all
         columns_to_remove = columns_to_remove_KOI_full
