@@ -12,7 +12,7 @@ NASA Space Apps Challenge 2025.
 
 **Members**: Matilda Froste, Sebastian Froste, Elena Ermakova.
 
-[**Resulting webapplication**](xoxoplanet.streamlit.app)
+[**Resulting webapplication**](https://xoxoplanet.streamlit.app/)
 
 ## Background
 
@@ -28,7 +28,7 @@ In this project, we:
 - Engineered features from astrophysical parameters and time-series data.  
 - Developed a predictive pipeline of four finetuned classifiers; AdaBoost, GradientBoost, XGBoost, RandomForest.
 - Evaluated model performance with metrics such as recall, precision, AUC, confusion matrices, and ROC-curves.  
-- Built an interactive ([**Streamlit interface**](xoxoplanet.streamlit.app)) to visualize light curves, show predictions, and compare ML vs DL outputs.  
+- Built an interactive ([**Streamlit interface**](https://xoxoplanet.streamlit.app/)) to visualize light curves, show predictions, and compare ML vs DL outputs.  
 
 This combined approach highlights the trade-offs between interpretability and performance, demonstrating how AI can help astronomers efficiently distinguish confirmed exoplanets from false positives.
 
