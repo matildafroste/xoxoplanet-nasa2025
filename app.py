@@ -619,6 +619,25 @@ def main():
                                                         key=feature
                                                         )
                 
+            # Load feature order 
+            with open(f"results/{data_choice}/features.json", "r") as f: 
+                features_from_model_in_order = json.load(f) 
+                # Create one-row DataFrame with NaNs in correct feature order 
+            input_df = pd.DataFrame([np.nan] * len(
+                features_from_model_in_order), index=features_from_model_in_order
+                ).T
+
+            # Update with provided input values 
+            for key, value in input_values.items(): 
+                if key in input_df.columns: 
+                    input_df.at[0, key] = value # Now input_df is ready for prediction 
+            # Load scaler 
+            scaler = joblib.load(f"results/{data_choice}/scaler.pkl") 
+            # Scale your input before predicting 
+            input_df_scaled = scaler.transform(input_df) 
+            input_to_predict = input_df_scaled
+                
+                
         elif input_method == "CSV File Upload":  # CSV File Upload# CSV File Upload
             st.info("Upload CSV file with exoplanet data:")
             
