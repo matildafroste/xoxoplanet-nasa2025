@@ -596,15 +596,28 @@ def main():
         )
         # TODO: add a button for existing input data
         if input_method == "Manual Entry (Sliders)":
+            names_and_descr = json.load(open('datasets/variable_names_and_descriptions.json'))
             # TODO : get the most important features? 
             st.markdown("Enter astronomical observation data:")
             input_values =  {}
             for feature in features:
-                input_values[feature] = st.number_input(feature
-                                                        # , min_value = data_df[feature].min(), max_value= data_df[feature].max()
+                if feature in names_and_descr:
+                    var_name = names_and_descr[feature]['name']
+                    var_descr = names_and_descr[feature]['description']
+                else:
+                    var_name = feature
+                    var_descr = 'Could not find description.'
+                # var_value = default_input_features[feature]['value']
+                # min_value = default_input_features[feature]['min_value']
+                # max_value = default_input_features[feature]['max_value']
+                input_values[feature] = st.number_input(label=var_name,
+                                                        # min_value = min_value,
+                                                        # max_value= max_value,
+                                                        # value = var_value,
+                                                        help = var_descr,
+                                                        key=feature
                                                         )
-            
-        
+                
         else:  # CSV File Upload
             st.info("Upload CSV file with exoplanet data:")
             
