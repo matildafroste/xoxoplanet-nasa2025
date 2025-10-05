@@ -629,9 +629,11 @@ def main():
                 features_from_model_in_order), index=features_from_model_in_order
                 ).T
 
+            empty_fields_ratio = 0 # Create a variable to keep track of how many fields are left empty
             # Update with provided input values 
             for key, value in input_values.items(): 
                 if value=='': # If the variable's input field is left empty
+                    empty_fields_ratio += 1/len(input_values)
                     value = data_df[key].mean() # Impute using the average value of the dataset
                 if key in input_df.columns: 
                     input_df.at[0, key] = value # Now input_df is ready for prediction 
@@ -814,11 +816,16 @@ def main():
         </style>
         ''', unsafe_allow_html=True)
         
-        col1, col2, col3 = st.columns([1, 1, 1])
+        col1, col2, col3 = st.columns([1, 3, 1])
+
         with col2:
             if st.button("IS IT AN EXOPLANET?", key="analyze_button", 
-                       help="Click to analyze the mysterious object"):
-                # Use test data if available, otherwise use sidebar input fields
+                       help="Click to analyze the mysterious object",
+                       use_container_width=True):
+
+                if input_method == "Manual Entry (Sliders)" and empty_fields_ratio>=0.5:
+                    st.error('Warning: Fewer than half of the available variables have been selected. Model reliability may be significantly reduced, and the resulting likelihood estimates should be interpreted with caution. Consider including more observational parameters for a more robust analysis.')
+               # Use test data if available, otherwise use sidebar input fields
                 # if 'test_data' in st.session_state:
 
                 #     for feature in features:
