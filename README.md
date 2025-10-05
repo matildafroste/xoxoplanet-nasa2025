@@ -1,58 +1,103 @@
 # xoxoplanet-nasa2025
 
-NASA Space Apps Challenge 2025 with team XOXOplanet.
-Challenge: A World Away: Hunting for Exoplanets with AI.
+NASA Space Apps Challenge 2025.
 
-This repository is where we keep all our code, notebooks, and notes. The idea is that we all work from the same shared base so changes can be tracked, merged, and improved together.
+**Challenge**: A World Away: Hunting for Exoplanets with AI.
 
-## Getting Started
+**Difficulty**: Advanced.
 
-Follow these steps to set up the project on your own computer. Even if you are new to coding or version control, just go step by step and you’ll be ready.
+**Tags**: Artificial Intelligence & Machine Learning, Coding, Data Analysis, Data Management, Data Visualization, Extrasolar Objects, Planets & Moons, Software, Space Exploration
 
-We recommend using **Visual Studio Code**. It makes collaboration easier for us since we can share workspace settings, use the same extensions, and follow the same workflow.
+**Team**: XOXOplanet.
+
+**Members**: Matilda Froste, Sebastian Froste, Elena Ermakova.
+
+[**Resulting webapplication**](xoxoplanet.streamlit.app)
+
+## Background
+
+This project was developed as part of the **2025 NASA Space Apps Challenge**, under the theme **"A World Away: Hunting for Exoplanets with AI."**  
+
+The challenge focuses on using NASA’s public datasets from missions such as **Kepler**, **K2**, and **TESS** to classify exoplanet candidates. These missions collected light curves — measurements of stellar brightness over time — which can reveal the presence of exoplanets through periodic dips caused by planetary transits.  
+
+Traditionally, astronomers use statistical techniques like the Box Least Squares (BLS) algorithm to identify transits, followed by manual vetting. However, with hundreds of thousands of stars monitored and millions of candidate signals, manual methods become impractical. Machine learning and deep learning approaches provide a scalable way to improve classification accuracy, reduce false positives, and accelerate scientific discovery.  
+
+In this project, we:  
+- Explored and cleaned the NASA Kepler Objects of Interest (KOI) dataset.  
+- Performed **Exploratory Data Analysis (EDA)** to understand distributions, class balance, and noise patterns.  
+- Engineered features from astrophysical parameters and time-series data.  
+- Developed a predictive pipeline of four finetuned classifiers; AdaBoost, GradientBoost, XGBoost, RandomForest.
+- Evaluated model performance with metrics such as recall, precision, AUC, confusion matrices, and ROC-curves.  
+- Built an interactive ([**Streamlit interface**](xoxoplanet.streamlit.app)) to visualize light curves, show predictions, and compare ML vs DL outputs.  
+
+This combined approach highlights the trade-offs between interpretability and performance, demonstrating how AI can help astronomers efficiently distinguish confirmed exoplanets from false positives.
+
+## Methodology
+
+### Pre-processing
+- The Kepler (KOI) data was chosen as the main dataset.
+
+- When downloading, two options were available: “Subset,” which included only the checked columns, and “Full,” which included all columns.
+
+- Empty rows and columns were removed, and rows with more than 50% missing data were dropped.
+
+- For the target column koi_disposition, only “CONFIRMED” and “CANDIDATE” entries were kept, while “FALSE POSITIVE” rows were dropped.
+
+- Exploratory data analysis was performed to gain a better understanding of the dataset.
+
+- Columns not useful for training, such as dates and IDs, were removed, along with other non-numerical columns.
+
+### Model development
+- The data was split into X (numeric features) and y (the target column koi_disposition).
+
+- X and y were further divided into train, validation, and test sets: the train set was used for training, the validation set for tuning hyperparameters, and the test set for final evaluation.
+
+- Four classification models were trained and compared, all of which are selectable in the interface:
+
+    - Random Forest: an ensemble of decision trees.
+
+    - Gradient Boosting: a method that corrects errors sequentially.
+
+    - XGBoost: an optimized implementation of gradient boosting.
+
+    - AdaBoost: an ensemble method with sequential learners.
+
+### Evaluation
+Evaluation on the validation set returned satisfactory metric scores, and the models were integrated into the interface.
+
+| Model             | Accuracy | Precision | Recall | F1 Score | ROC-AUC |
+|-------------------|----------|-----------|--------|----------|---------|
+| Random Forest     | 0.866    | 0.881     | 0.896  | 0.888    | 0.932   |
+| Gradient Boosting | **0.877**| 0.888     | **0.908** | 0.898    | 0.933   |
+| XGBoost           | 0.876    | **0.894** | 0.898  | **0.896**| **0.934**|
+| AdaBoost          | 0.862    | 0.876     | 0.893  | 0.885    | 0.927   |
+
+### Resulting user interface
+
+The Streamlit app (see link at the top) provides a live, interactive interface where researchers and scientists can instantly input data from a potential exoplanet candidate and receive a classification result. The more variables entered, the more reliable the prediction becomes. Users can also choose which trained model to apply, guided by the performance metrics shown earlier. This not only makes the workflow transparent and less of a “black box,” but also allows direct comparison between models. The app is designed to be intuitive, enabling both experts and newcomers to experiment with real NASA data in a hands-on way.
+
+## Try it it? - Get Started
+
+Follow these steps to set up the project on your own computer.
+
+Make sure you have python installed ([python.org](https://www.python.org/downloads/)). 
 
 ### 1. Clone this repository
 
-You need to get a local copy of this repository (the code lives on GitHub, but you’ll want it on your own machine). You have two options:
-
-#### Option A (easiest): Zip
-
-Download as ZIP from GitHub and unzip it into a folder of your choice.
-
-#### Option B (recommended): Use Git directly.
-
-1. Open VS Code.
-
-2. Open the workspace/folder where you want the project to live.
-
-3. Open the terminal in VS Code by pressing Ctrl + J (Windows) or Cmd + J (Mac).
-
-4. Type:
+You need to get a local copy of this repository (the code lives on GitHub, but you’ll want it on your own machine). Either download as ZIP from GitHub and unzip it into a folder of your choice or type
 ```
 git clone https://github.com/matildafroste/xoxoplanet-nasa2025.git
 ```
+when located in your directory of choice. 
 
-Now you have the project locally on your computer.
+### 2. Virtual environment
 
-### 2. Install Python
-
-Make sure you have Python 3 installed. You can check by typing:
-```
-python --version
-```
-
-If you don’t have it, download it from [python.org](https://www.python.org/downloads/)
-.
-
-### 3. Create a virtual environment
-
-A virtual environment is like a clean sandbox that keeps our project’s libraries separate from other projects. In the project folder, run:
+In the project folder, run:
 ```
 python -m venv venv
 ```
-### 4. Activate the virtual environment
 
-This tells your computer to “step into” the sandbox.
+Activate it by typing:
 
 On Windows:
 ```
@@ -66,49 +111,11 @@ source venv/bin/activate
 
 When activated, your terminal should show (venv) at the beginning of the line.
 
-### 5. Install required libraries
+### 3. Install required libraries
 
 Now install all the libraries we need for the project. They are listed in a file called requirements.txt. Run:
 ```
 pip install -r requirements.txt
 ```
+You should be good to go!
 
-That’s it — you’re ready to run code and start contributing.
-
-## How to Work with GitHub
-
-This is the basic workflow we’ll use so that we can all collaborate smoothly. All steps below can also be completed using the "Source Control" tab in VS Code. 
-
-### 1. Pull the latest changes
-
-Before starting work, always update your local copy so you’re working on the latest version:
-```
-git pull
-```
-### 2. Make changes locally
-
-Do your coding in VS Code in the project folder. Save your changes.
-
-### 3. Stage and commit your changes
-
-When you’re happy with your edits, stage them and write a short message explaining what you did:
-```
-git add .
-git commit -m "Short message about what you changed"
-```
-### 4. Push your changes to GitHub
-
-Send your changes to the shared repository:
-```
-git push
-```
-### 5. Communicate
-
-If you’re adding something major (like a new library), let the team know so we all update accordingly.
-
-## Notes for the Team
-- Use VS Code so we work in the same environment.
-- Always activate your virtual environment before working on the project.
-- Always pull before starting to code, so you don’t overwrite someone else’s work.
-- If you add a new library, update requirements.txt so we all stay in sync.
-- If something doesn’t work, don’t hesitate to ask in the chat so we solve it quickly together.
