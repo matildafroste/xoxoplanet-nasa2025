@@ -496,6 +496,25 @@ def get_data_info(df, data_choice):
     return data_info_dict
 
 
+def show_model_scores(scores: dict, model_name: str = "Model Performance"):
+    """
+    Display model performance scores in a nice Streamlit table.
+    
+    Parameters:
+        scores (dict): Dictionary with metrics like accuracy, precision, recall, f1, roc_auc.
+        model_name (str): Optional name of the model.
+    """
+    # Convert to DataFrame for clean display
+    df_scores = pd.DataFrame(scores, index=[model_name]).T
+    df_scores.columns = ["Score"]
+
+    # Round for readability
+    df_scores["Score"] = df_scores["Score"].round(4)
+
+    st.markdown(f"{model_name} Scores")
+    st.table(df_scores)
+
+
 
 def main():
     """Main application function"""
@@ -526,7 +545,7 @@ def main():
             "Select Data Source:", 
             ["Kepler subset", "Kepler full"],
             index=0,
-            help="Choose the machine learning model for exoplanet detection"
+            help="Choose which Kepler data you want you model to have been trained on. Full is around 100 features, subset is trained on 40 features. You will see all features further down in the side bar."
         )
 
         data_df = load_chosen_data(data_choice)
@@ -534,7 +553,7 @@ def main():
         st.session_state['data_name'] = data_choice
         st.session_state['data'] = data_df
 
-        st.success(f"Active Data: {data_choice}")
+        # st.success(f"Active Data: {data_choice}")
         st.markdown("## MODEL STATUS")
         
         # Model Selection Dropdown (expandable list)
@@ -557,8 +576,9 @@ def main():
         st.session_state['model'] = models_dict[model_choice]
         st.session_state['model_info'] = results_dict[model_choice]
         
-        st.success(f"Active Model: {model_choice}")
-        st.info(f"Model performance scores: \n{st.session_state['model_info']}")
+        # st.success(f"Active Model: {model_choice}")
+        show_model_scores(scores = results_dict[model_choice])
+        # st.info(f"Model performance scores: \n{st.session_state['model_info']}")
         
         
         # st.warning("Temporary test buttons for demonstration")
@@ -578,7 +598,7 @@ def main():
         if input_method == "Manual Entry (Sliders)":
             names_and_descr = json.load(open('datasets/variable_names_and_descriptions.json'))
             # TODO : get the most important features? 
-            st.info("Enter astronomical observation data:")
+            st.markdown("Enter astronomical observation data:")
             input_values =  {}
             for feature in features:
                 if feature in names_and_descr:
@@ -604,7 +624,7 @@ def main():
             uploaded_file = st.file_uploader(
                 "Choose CSV file", 
                 type="csv",
-                help="Upload CSV with columns: orbital_period, transit_depth, model_snr, transit_duration, impact_parameter"
+                help="Upload CSV with columns: XX"
             )
             
             if uploaded_file is not None:
@@ -622,12 +642,6 @@ def main():
                 except Exception as e:
                     st.error(f"Error reading CSV file: {str(e)}")
             
-            # Set default values for when no file is uploaded
-            orbital_period = 25.0
-            transit_depth = 1200.0
-            model_snr = 8.5
-            transit_duration = 6.0
-            impact_parameter = 0.3
         
         # Manual test buttons
         col1, col2 = st.columns(2)
@@ -635,24 +649,14 @@ def main():
         with col1:
             if st.button("TEST EXOPLANET", type="secondary"):
                 st.session_state['test_data'] = {
-                    **input_values,
-                    'orbital_period': 35.0,
-                    'transit_depth': 1500.0,
-                    'model_snr': 12.5,
-                    'transit_duration': 8.0,
-                    'impact_parameter': 0.25
+                    **input_values
                 }
                 st.success("Exoplanet test data loaded!")
         
         with col2:
             if st.button("TEST NOT EXOPLANET", type="secondary"):
                 st.session_state['test_data'] = {
-                    **input_values,
-                    'orbital_period': 2.0,
-                    'transit_depth': 300.0,
-                    'model_snr': 3.2,
-                    'transit_duration': 1.5,
-                    'impact_parameter': 0.9
+                    **input_values
                 }
                 st.success("Not exoplanet test data loaded!")
         
@@ -786,39 +790,45 @@ def main():
                 # Use test data if available, otherwise use sidebar input fields
                 if 'test_data' in st.session_state:
 
-                    # for feature in features:
+                    for feature in features:
+                        feature = st.session_state['test_data'][feature]
 
-                    orbital_period = st.session_state['test_data']['orbital_period']
-                    transit_depth = st.session_state['test_data']['transit_depth']
-                    model_snr = st.session_state['test_data']['model_snr']
-                    transit_duration = st.session_state['test_data']['transit_duration']
-                    impact_parameter = st.session_state['test_data']['impact_parameter']
-                    st.success(f"Using test data: Period={orbital_period:.1f} days, Depth={transit_depth:.0f} ppm")
+                    st.success(f"Using test data")
                 else:
                     # Use values from sidebar input fields
-                    st.success(f"Using manual input: Period={orbital_period:.1f} days, Depth={transit_depth:.0f} ppm")
+                    st.success(f"Using manual input")
                 
                 # Analyze with trained model
                 with st.spinner("Analyzing mysterious object..."):
                     model = st.session_state['model']
                     
                     # Create input data for the trained model features
-                    input_features = [
-                        orbital_period,      # koi_period
-                        transit_depth,       # koi_depth  
-                        model_snr,          # koi_model_snr
-                        transit_duration,    # koi_duration
-                        impact_parameter     # koi_impact
-                    ]
+                    # Load feature order
+                    with open(f"results/{data_choice}/features.json", "r") as f:
+                        features_from_model_in_order = json.load(f)
+
+                    # Create one-row DataFrame with NaNs in correct feature order
+                    input_df = pd.DataFrame([np.nan] * len(features_from_model_in_order),
+                                            index=features_from_model_in_order).T
+
+                    # Update with provided input values
+                    for key, value in input_values.items():
+                        if key in input_df.columns:
+                            input_df.at[0, key] = value
+
+                    # Now input_df is ready for prediction
+                    # Load scaler
                     
+                    scaler = joblib.load(f"results/{data_choice}/scaler.pkl")
+
+                    # Scale your input before predicting
+                    input_df_scaled = scaler.transform(input_df)
+
+                    prediction = model.predict(input_df_scaled)[0]
+                    confidence = model.predict_proba(input_df_scaled)[0][1]
                     
-                    input_data = [input_features]
                     
 
-                    # input data is a dcitionary with keys as column/featuyre names and their values are the values to predict on
-                    
-                    prediction = model.predict(input_data)[0]
-                    confidence = model.predict_proba(input_data)[0][1]  # Exoplanet confidence
                     
                     # Store result
                     st.session_state['last_result'] = prediction
@@ -829,9 +839,9 @@ def main():
                         st.success(f"**EXOPLANET DETECTED!**")
                         st.success(f"**Confidence Level:** {confidence:.1%}")
                         st.info(f"**Detection Parameters:**")
-                        st.info(f"• Orbital Period: {orbital_period:.1f} days")
-                        st.info(f"• Transit Depth: {transit_depth:.0f} ppm")
-                        st.info(f"• Signal-to-Noise Ratio: {model_snr:.1f}")
+                        # st.info(f"• Orbital Period: {orbital_period:.1f} days")
+                        # st.info(f"• Transit Depth: {transit_depth:.0f} ppm")
+                        # st.info(f"• Signal-to-Noise Ratio: {model_snr:.1f}")
                     else:
                         st.error(f"**NOT AN EXOPLANET**")
                         st.error(f"**Confidence Level:** {confidence:.1%}")
@@ -850,7 +860,7 @@ def main():
                     </script>
                     """, unsafe_allow_html=True)
                     
-                    st.rerun()  # Refresh to show XO transformation
+                    # st.rerun()  # Refresh to show XO transformation
         
         
         # Description below planet
