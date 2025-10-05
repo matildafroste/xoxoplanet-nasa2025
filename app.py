@@ -43,6 +43,18 @@ st.set_page_config(
     }
 )
 
+# Disable the Collapse sidebar button
+st.markdown(
+    """
+    <style>
+    [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
+        display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Simple dark background CSS
 st.markdown("""
 <style>
@@ -654,17 +666,6 @@ def main():
             </p>
         </div>
         """, unsafe_allow_html=True)
-
-        st.markdown(
-            """
-            <style>
-            [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
-                display: none;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
 
 if __name__ == "__main__":
     main()
