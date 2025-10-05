@@ -591,9 +591,10 @@ def main():
         # Data Input Choice (Manual vs CSV)
         input_method = st.radio(
             "Choose Input Method:",
-            ["Manual Entry (Sliders)", "CSV File Upload", "Existing input data"],
-            help="Select how to provide exoplanet data for analysis"
+            ["Manual Entry (Sliders)", "CSV File Upload", "Existing input data from test set"],
+            help="Select how to provide exoplanet data for analysis. If choosing existing you will get a randomized potential canditate form the test dataset."
         )
+        st.markdown(input_method)
         # TODO: add a button for existing input data
         if input_method == "Manual Entry (Sliders)":
             names_and_descr = json.load(open('datasets/variable_names_and_descriptions.json'))
@@ -620,7 +621,28 @@ def main():
                         st.markdown(f"Invalid input, only numbers are allowed.")
                 input_values[feature] = input_text
                 
-        else:  # CSV File Upload
+            # Load feature order 
+            with open(f"results/{data_choice}/features.json", "r") as f: 
+                features_from_model_in_order = json.load(f) 
+                # Create one-row DataFrame with NaNs in correct feature order 
+            input_df = pd.DataFrame([np.nan] * len(
+                features_from_model_in_order), index=features_from_model_in_order
+                ).T
+
+            # Update with provided input values 
+            for key, value in input_values.items(): 
+                if value=='': # If the variable's input field is left empty
+                    value = data_df[key].mean() # Impute using the average value of the dataset
+                if key in input_df.columns: 
+                    input_df.at[0, key] = value # Now input_df is ready for prediction 
+            # Load scaler 
+            scaler = joblib.load(f"results/{data_choice}/scaler.pkl") 
+            # Scale your input before predicting 
+            input_df_scaled = scaler.transform(input_df) 
+            input_to_predict = input_df_scaled
+                
+                
+        elif input_method == "CSV File Upload":  # CSV File Upload# CSV File Upload
             st.info("Upload CSV file with exoplanet data:")
             
             uploaded_file = st.file_uploader(
@@ -643,88 +665,95 @@ def main():
                     
                 except Exception as e:
                     st.error(f"Error reading CSV file: {str(e)}")
-            
+        elif input_method == "Existing input data from test set":
+            file_path = os.path.join(f"results/{data_choice}/", "X_test_scaled.npy")
+            arr = np.load(file_path)
+
+            # pick random row
+            random_idx = np.random.choice(arr.shape[0])
+            input_to_predict = arr[random_idx].reshape(1, -1)
+
         
         # Manual test buttons
         col1, col2 = st.columns(2)
         
-        with col1:
-            if st.button("TEST EXOPLANET", type="secondary"):
-                st.session_state['test_data'] = {
-                    **input_values
-                }
-                st.success("Exoplanet test data loaded!")
+        # with col1:
+        #     if st.button("TEST EXOPLANET", type="secondary"):
+        #         # st.session_state['test_data'] = {
+        #         #     **input_values
+        #         # }
+        #         st.success("Exoplanet test data loaded!")
         
-        with col2:
-            if st.button("TEST NOT EXOPLANET", type="secondary"):
-                st.session_state['test_data'] = {
-                    **input_values
-                }
-                st.success("Not exoplanet test data loaded!")
+        # with col2:
+        #     if st.button("TEST NOT EXOPLANET", type="secondary"):
+        #         # st.session_state['test_data'] = {
+        #         #     **input_values
+        #         # }
+        #         st.success("Not exoplanet test data loaded!")
         
         # Model Comparison Graphics
-        st.markdown("## MODEL COMPARISON")
+        # st.markdown("## MODEL COMPARISON")
         
-        if st.button("Show Model Performance", type="secondary"):
-            # Create model comparison visualization
-            st.info("Generating model performance comparison...")
+        # if st.button("Show Model Performance", type="secondary"):
+        #     # Create model comparison visualization
+        #     st.info("Generating model performance comparison...")
             
-            # Sample performance data for different models
-            models_data = {
-                'Model': ['Random Forest', 'SVM', 'Gradient Boosting', 'Neural Network'],
-                'Accuracy': [0.87, 0.82, 0.89, 0.85],
-                'Precision': [0.91, 0.88, 0.93, 0.89],
-                'Recall': [0.83, 0.79, 0.86, 0.84],
-                'F1-Score': [0.87, 0.83, 0.89, 0.86]
-            }
+        #     # Sample performance data for different models
+        #     models_data = {
+        #         'Model': ['Random Forest', 'SVM', 'Gradient Boosting', 'Neural Network'],
+        #         'Accuracy': [0.87, 0.82, 0.89, 0.85],
+        #         'Precision': [0.91, 0.88, 0.93, 0.89],
+        #         'Recall': [0.83, 0.79, 0.86, 0.84],
+        #         'F1-Score': [0.87, 0.83, 0.89, 0.86]
+        #     }
             
-            df_comparison = pd.DataFrame(models_data)
+        #     df_comparison = pd.DataFrame(models_data)
             
-            # Display comparison table
-            st.write("**Model Performance Metrics:**")
-            st.dataframe(df_comparison, use_container_width=True)
+        #     # Display comparison table
+        #     st.write("**Model Performance Metrics:**")
+        #     st.dataframe(df_comparison, use_container_width=True)
             
-            # Create comparison chart
-            fig_comparison = px.bar(
-                df_comparison, 
-                x='Model', 
-                y=['Accuracy', 'Precision', 'Recall', 'F1-Score'],
-                title="Model Performance Comparison",
-                color_discrete_sequence=['#0066CC', '#0088FF', '#003366', '#0099FF']
-            )
-            fig_comparison.update_layout(
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                font_color='white'
-            )
+        #     # Create comparison chart
+        #     fig_comparison = px.bar(
+        #         df_comparison, 
+        #         x='Model', 
+        #         y=['Accuracy', 'Precision', 'Recall', 'F1-Score'],
+        #         title="Model Performance Comparison",
+        #         color_discrete_sequence=['#0066CC', '#0088FF', '#003366', '#0099FF']
+        #     )
+        #     fig_comparison.update_layout(
+        #         plot_bgcolor='rgba(0,0,0,0)',
+        #         paper_bgcolor='rgba(0,0,0,0)',
+        #         font_color='white'
+        #     )
             
-            st.plotly_chart(fig_comparison, use_container_width=True)
+        #     st.plotly_chart(fig_comparison, use_container_width=True)
             
-            # Feature Importance for Random Forest
-            if model_choice == "Random Forest Classifier":
-                st.subheader("Feature Importance (Random Forest)")
+        #     # Feature Importance for Random Forest
+        #     if model_choice == "Random Forest Classifier":
+        #         st.subheader("Feature Importance (Random Forest)")
                 
-                feature_importance_data = {
-                    'Feature': ['Orbital Period', 'Transit Depth', 'Signal-to-Noise', 'Duration', 'Impact'],
-                    'Importance': [0.25, 0.35, 0.20, 0.12, 0.08]
-                }
+        #         feature_importance_data = {
+        #             'Feature': ['Orbital Period', 'Transit Depth', 'Signal-to-Noise', 'Duration', 'Impact'],
+        #             'Importance': [0.25, 0.35, 0.20, 0.12, 0.08]
+        #         }
                 
-                fig_features = px.bar(
-                    feature_importance_data,
-                    x='Importance',
-                    y='Feature',
-                    orientation='h',
-                    title="Feature Importance for Exoplanet Detection",
-                    color='Importance',
-                    color_continuous_scale='Blues'
-                )
-                fig_features.update_layout(
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    font_color='white'
-                )
+        #         fig_features = px.bar(
+        #             feature_importance_data,
+        #             x='Importance',
+        #             y='Feature',
+        #             orientation='h',
+        #             title="Feature Importance for Exoplanet Detection",
+        #             color='Importance',
+        #             color_continuous_scale='Blues'
+        #         )
+        #         fig_features.update_layout(
+        #             plot_bgcolor='rgba(0,0,0,0)',
+        #             paper_bgcolor='rgba(0,0,0,0)',
+        #             font_color='white'
+        #         )
                 
-                st.plotly_chart(fig_features, use_container_width=True)
+        #         st.plotly_chart(fig_features, use_container_width=True)
         
         # Navigation Menu in sidebar
         st.markdown("## NAVIGATION MENU")
@@ -790,46 +819,24 @@ def main():
             if st.button("IS IT AN EXOPLANET?", key="analyze_button", 
                        help="Click to analyze the mysterious object"):
                 # Use test data if available, otherwise use sidebar input fields
-                if 'test_data' in st.session_state:
+                # if 'test_data' in st.session_state:
 
-                    for feature in features:
-                        feature = st.session_state['test_data'][feature]
+                #     for feature in features:
+                #         feature = st.session_state['test_data'][feature]
 
-                    st.success(f"Using test data")
-                else:
-                    # Use values from sidebar input fields
-                    st.success(f"Using manual input")
+                #     st.success(f"Using test data")
+                # else:
+                #     # Use values from sidebar input fields
+                #     st.success(f"Using manual input")
                 
                 # Analyze with trained model
                 with st.spinner("Analyzing mysterious object..."):
                     model = st.session_state['model']
                     
                     # Create input data for the trained model features
-                    # Load feature order
-                    with open(f"results/{data_choice}/features.json", "r") as f:
-                        features_from_model_in_order = json.load(f)
-
-                    # Create one-row DataFrame with NaNs in correct feature order
-                    input_df = pd.DataFrame([np.nan] * len(features_from_model_in_order),
-                                            index=features_from_model_in_order).T
-
-                    # Update with provided input values
-                    for key, value in input_values.items():
-                        if value=='': # If the variable's input field is left empty
-                            value = data_df[key].mean() # Impute using the average value of the dataset
-                        if key in input_df.columns:
-                            input_df.at[0, key] = value
-
-                    # Now input_df is ready for prediction
-                    # Load scaler
-                    
-                    scaler = joblib.load(f"results/{data_choice}/scaler.pkl")
-
-                    # Scale your input before predicting
-                    input_df_scaled = scaler.transform(input_df)
-
-                    prediction = model.predict(input_df_scaled)[0]
-                    confidence = model.predict_proba(input_df_scaled)[0][1]
+                    # st.markdown(input_to_predict)
+                    prediction = model.predict(input_to_predict)[0]
+                    confidence = model.predict_proba(input_to_predict)[0][1]
                     
                     
 
@@ -841,15 +848,14 @@ def main():
                     # Show detailed result
                     if prediction == 1:
                         st.success(f"**EXOPLANET DETECTED!**")
-                        st.success(f"**Confidence Level:** {confidence:.1%}")
-                        st.info(f"**Detection Parameters:**")
+                        st.info(f"**This object appears to be an exoplanet with confidence level {confidence:.1%}**")
                         # st.info(f"• Orbital Period: {orbital_period:.1f} days")
                         # st.info(f"• Transit Depth: {transit_depth:.0f} ppm")
                         # st.info(f"• Signal-to-Noise Ratio: {model_snr:.1f}")
                     else:
-                        st.error(f"**NOT AN EXOPLANET**")
-                        st.error(f"**Confidence Level:** {confidence:.1%}")
-                        st.info(f"This object appears to be a false positive or stellar phenomena.")
+                        st.error(f"**CANDIDATE DETECTED**")
+                        # st.error(f"**Confidence Level:** ")
+                        st.info(f"This object does not with certainty appear to be an exoplanet - this is classified as a Canditate with confidence level {confidence:.1%}.")
                     
                     # Trigger XO circle animation - change to O like test app
                     st.markdown("""
