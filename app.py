@@ -576,26 +576,26 @@ def main():
         )
         # TODO: add a button for existing input data
         if input_method == "Manual Entry (Sliders)":
-            features = {'koi_period': {'min_value':0.1, 'max_value':data_df['koi_period'].max(), 'value':25.0}, # data_df['koi_period'].min()
-                                 'koi_depth': {'min_value':0.0, 'max_value':data_df['koi_depth'].max(), 'value':1200.0},
-                                 'koi_model_snr': {'min_value':0.0, 'max_value':data_df['koi_model_snr'].max(), 'value':8.5},
-                                 'koi_duration': {'min_value':0.1, 'max_value':data_df['koi_duration'].max(), 'value':6.0},
-                                 'koi_impact': {'min_value':0.0, 'max_value':data_df['koi_impact'].max(), 'value':0.3}}
             names_and_descr = json.load(open('datasets/variable_names_and_descriptions.json'))
             # TODO : get the most important features? 
             st.info("Enter astronomical observation data:")
             input_values =  {}
             for feature in features:
-                var_name = names_and_descr[feature]['name']
-                var_descr = names_and_descr[feature]['description']
-                var_value = features[feature]['value']
-                min_value = features[feature]['min_value']
-                max_value = features[feature]['max_value']
+                if feature in names_and_descr:
+                    var_name = names_and_descr[feature]['name']
+                    var_descr = names_and_descr[feature]['description']
+                else:
+                    var_name = feature
+                    var_descr = 'Could not find description.'
+                # var_value = default_input_features[feature]['value']
+                # min_value = default_input_features[feature]['min_value']
+                # max_value = default_input_features[feature]['max_value']
                 input_values[feature] = st.number_input(label=var_name,
-                                                        min_value = min_value,
-                                                        max_value= max_value,
-                                                        value = var_value,
-                                                        help = var_descr
+                                                        # min_value = min_value,
+                                                        # max_value= max_value,
+                                                        # value = var_value,
+                                                        help = var_descr,
+                                                        key=feature
                                                         )
                 
         else:  # CSV File Upload
