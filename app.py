@@ -696,5 +696,16 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
+        st.markdown(
+            """
+            <style>
+            [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
+                display: none;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
 if __name__ == "__main__":
     main()
