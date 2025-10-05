@@ -29,7 +29,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime
 import os
-
+import joblib
+import json
 # Set page configuration
 st.set_page_config(
     page_title="XOXOplanet Exoplanet Detection",
@@ -336,17 +337,62 @@ def create_planet_transformation(is_exoplanet, confidence):
 
 # Old dummy model function removed - now using trained model
 
+def load_results_models(results_path="results/models"):
+    """
+    Load all saved joblib models from a folder into a dictionary.
+
+    Parameters:
+        results_path (str): Path where models are saved.
+
+    Returns:
+        dict: {model_name: trained_model}
+    """
+    models = {}
+    for file in os.listdir(results_path):
+        if file.endswith(".joblib"):
+            model_name = file.replace(".joblib", "")
+            models[model_name] = joblib.load(os.path.join(results_path, file))
+            print(f"✅ Loaded model: {model_name}")
+    return models
+
+def load_results_info(results_path="results/"):
+    """
+    Load saved results from results.json.
+
+    Parameters:
+        results_path (str): Path where results.json is saved.
+
+    Returns:
+        dict: Loaded results dictionary
+    """
+    file_path = os.path.join(results_path, "results.json")
+    
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"No results.json found in {results_path}")
+    
+    with open(file_path, "r") as f:
+        results = json.load(f)
+    
+    print(f"Loaded results from {file_path}")
+    return results
+
 def main():
     """Main application function"""
     
     # Stars background removed to prevent rendering issues
-    
+    models_dict = load_results_models()
+    results_info = load_results_info() 
+    available_models = results_info.keys()
     # Auto-load trained model
     if 'model' not in st.session_state:
-        with st.spinner("Loading NASA Exoplanet Detection Model..."):
-            model, model_info = load_trained_model()
-            st.session_state['model'] = model
-            st.session_state['model_info'] = model_info
+        with st.spinner("Loading first NASA Exoplanet Detection Model..."):
+            # model, model_info = load_trained_model()
+            # Get first key
+            model_name = next(iter(models_dict))
+            # Get first value (the model)
+            model_ex = models_dict[model_name]
+            st.session_state['model'] = model_ex
+            st.session_state['model_info'] = results_info[model_name]
     
     # Professional NASA-style header
     st.markdown('<h1 class="main-header">XOXOPLANET DETECTION SYSTEM</h1>', unsafe_allow_html=True)
@@ -356,12 +402,7 @@ def main():
         st.markdown("## MODEL STATUS")
         
         # Model Selection Dropdown (expandable list)
-        available_models = [
-            "Random Forest Classifier",
-            "Support Vector Machine", 
-            "Gradient Boosting",
-            "Neural Network"
-        ]
+        
         
         model_choice = st.selectbox(
             "Select Model:", 
