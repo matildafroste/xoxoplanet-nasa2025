@@ -607,16 +607,18 @@ def main():
                 else:
                     var_name = feature
                     var_descr = 'Could not find description.'
-                # var_value = default_input_features[feature]['value']
-                # min_value = default_input_features[feature]['min_value']
-                # max_value = default_input_features[feature]['max_value']
-                input_values[feature] = st.number_input(label=var_name,
-                                                        # min_value = min_value,
-                                                        # max_value= max_value,
-                                                        # value = var_value,
-                                                        help = var_descr,
-                                                        key=feature
-                                                        )
+
+                # Take manual input as strings, thus allowing empty fields.
+                # Display an error message below the input field if not a number.
+                input_text = st.text_input(label=var_name,
+                                           help=var_descr,
+                                           key=feature)
+                if input_text != '':
+                    try:
+                        input_text = float(input_text)  # try to convert the variable to a float
+                    except ValueError:  # if it's not convertible, catch the ValueError exception
+                        st.markdown(f"Invalid input, only numbers are allowed.")
+                input_values[feature] = input_text
                 
         else:  # CSV File Upload
             st.info("Upload CSV file with exoplanet data:")
@@ -813,6 +815,8 @@ def main():
 
                     # Update with provided input values
                     for key, value in input_values.items():
+                        if value=='': # If the variable's input field is left empty
+                            value = data_df[key].mean() # Impute using the average value of the dataset
                         if key in input_df.columns:
                             input_df.at[0, key] = value
 
