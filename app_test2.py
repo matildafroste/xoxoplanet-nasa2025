@@ -983,16 +983,5 @@ def main():
     elif st.session_state['current_page'] == 'model':
         select_model_page()
 
-        st.markdown(
-            """
-            <style>
-            [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] {
-                display: none;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-
 if __name__ == "__main__":
     main()
