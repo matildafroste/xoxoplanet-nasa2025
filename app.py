@@ -58,13 +58,20 @@ st.markdown(
 # Simple dark background CSS
 st.markdown("""
 <style>
+/* Import Jersey 20 font */
+@import url('https://fonts.googleapis.com/css2?family=Jersey+20&display=swap');
+
 /* Simple NASA-style dark background */
-/* Font import removed to prevent loading issues */
 
 body {
     background: #000428;
     color: white;
-    font-family: 'Helvetica', sans-serif;
+    font-family: 'Jersey 20', cursive;
+}
+
+/* Override all text elements to use Jersey font */
+* {
+    font-family: 'Jersey 20', cursive !important;
 }
 
 .stApp {
@@ -75,6 +82,7 @@ body {
     text-align: center;
     color: white;
     font-size: 2rem;
+    font-family: 'Jersey 20', cursive;
     margin-bottom: 2rem;
 }
 
@@ -84,7 +92,7 @@ body {
 }
 
 .sub-header {
-    font-family: 'Helvetica', Arial, sans-serif;
+    font-family: 'Jersey 20', cursive;
     font-size: 1.4rem;
     font-weight: 500;
     background: linear-gradient(90deg, #0066cc, #003366);
@@ -96,7 +104,7 @@ body {
 }
 
 .sidebar-header {
-    font-family: 'Helvetica', Arial, sans-serif;
+    font-family: 'Jersey 20', cursive;
     font-size: 1.2rem;
     font-weight: 500;
     color: #0066cc;
@@ -121,7 +129,7 @@ body {
 }
 
 .question-text {
-    font-family: 'Helvetica', Arial, sans-serif;
+    font-family: 'Jersey 20', cursive;
     font-size: 1.8rem;
     font-weight: 300;
     color: #ffffff;
@@ -137,7 +145,7 @@ body {
     color: white;
     text-align: center;
     font-size: 1.2rem;
-    font-family: 'Helvetica', Arial, sans-serif;
+    font-family: 'Jersey 20', cursive;
 }
 
 .exoplanet-not-detected {
@@ -147,7 +155,7 @@ body {
     color: white;
     text-align: center;
     font-size: 1.2rem;
-    font-family: 'Helvetica', Arial, sans-serif;
+    font-family: 'Jersey 20', cursive;
 }
 
 .stButton > button {
@@ -156,7 +164,7 @@ body {
     border: 1px solid #004499;
     padding: 0.75rem 2rem;
     font-size: 1rem;
-    font-family: 'Helvetica', Arial, sans-serif;
+    font-family: 'Jersey 20', cursive;
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -219,7 +227,7 @@ body {
 }
 
 .menu-title {
-    font-family: 'Helvetica', Arial, sans-serif;
+    font-family: 'Jersey 20', cursive;
     font-size: 1.1rem;
     font-weight: 500;
     color: #0066cc;
@@ -625,6 +633,7 @@ def main():
             padding: 1rem 2rem !important;
             font-size: 1.2rem !important;
             font-weight: 600 !important;
+            font-family: 'Jersey 20', cursive !important;
             cursor: pointer !important;
             text-align: center !important;
             display: inline-block !important;
@@ -708,10 +717,10 @@ def main():
         # Description below planet
         st.markdown("""
         <div style="text-align: center; margin-top: 3rem;">
-            <p style="color: #CCCCCC; font-size: 1.2rem; font-family: 'Helvetica', Arial, sans-serif;">
+            <p style="color: #CCCCCC; font-size: 1.2rem; font-family: 'Jersey 20', cursive;">
                 Advanced AI analysis system for exoplanet detection using NASA datasets
             </p>
-            <p style="color: #999999; font-size: 1rem; margin-top: 1rem;">
+            <p style="color: #999999; font-size: 1rem; font-family: 'Jersey 20', cursive; margin-top: 1rem;">
                 Use the test buttons in the sidebar to try different scenarios
             </p>
         </div>
