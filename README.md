@@ -18,7 +18,7 @@ NASA Space Apps Challenge 2025.
 
 This project was developed as part of the **2025 NASA Space Apps Challenge**, under the theme **"A World Away: Hunting for Exoplanets with AI."**  
 
-The challenge focuses on using NASA’s public datasets from missions such as **Kepler**, **K2**, and **TESS** to classify exoplanet candidates. These missions collected light curves — measurements of stellar brightness over time — which can reveal the presence of exoplanets through periodic dips caused by planetary transits.  
+The challenge focuses on using NASA’s public datasets from missions such as **Kepler**, **K2**, and **TESS** to classify exoplanet candidates. These missions collected light curves, measurements of stellar brightness over time, which can reveal the presence of exoplanets through periodic dips caused by planetary transits.  
 
 Traditionally, astronomers use statistical techniques like the Box Least Squares (BLS) algorithm to identify transits, followed by manual vetting. However, with hundreds of thousands of stars monitored and millions of candidate signals, manual methods become impractical. Machine learning and deep learning approaches provide a scalable way to improve classification accuracy, reduce false positives, and accelerate scientific discovery.  
 
